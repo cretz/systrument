@@ -1,12 +1,13 @@
 package util
+
 import (
-	"os"
-	"compress/gzip"
 	"archive/tar"
+	"compress/gzip"
+	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"strings"
-	"io"
-	"fmt"
 )
 
 // level is gzip constant

@@ -1,10 +1,11 @@
 package remote
+
 import (
-	"github.com/cretz/systrument/context"
-	"fmt"
 	"errors"
-	"github.com/cretz/systrument/util"
+	"fmt"
+	"github.com/cretz/systrument/context"
 	"github.com/cretz/systrument/shell"
+	"github.com/cretz/systrument/util"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -13,20 +14,20 @@ import (
 
 type Remote struct {
 	Server *RemoteServer `json:"server"`
-	ctx *context.Context
+	ctx    *context.Context
 }
 
 type RemoteServer struct {
 	Host string `json:"host"`
-	OS string `json:"os"`
+	OS   string `json:"os"`
 	Arch string `json:"arch"`
-	SSH *SSH `json:"ssh"`
+	SSH  *SSH   `json:"ssh"`
 }
 
 type SSH struct {
 	User string `json:"user"`
 	Pass string `json:"pass"`
-	Sudo bool `json:"sudo"`
+	Sudo bool   `json:"sudo"`
 }
 
 func RemoteIfPresent(ctx *context.Context) (*Remote, error) {
@@ -85,7 +86,7 @@ func (r *Remote) RunRemotely() error {
 	if arch == "" {
 		arch = "amd64"
 	}
-	cmd.Env = append(cmd.Env, "GOOS=" + os, "GOARCH=" + arch)
+	cmd.Env = append(cmd.Env, "GOOS="+os, "GOARCH="+arch)
 	r.ctx.Infof("Building executable for remote OS %v and arch %v", os, arch)
 	if err = cmd.Run(); err != nil {
 		return fmt.Errorf("Failed to build custom remote binary: %v", err)

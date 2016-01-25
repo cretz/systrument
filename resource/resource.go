@@ -1,7 +1,8 @@
 package resource
+
 import (
-	"os"
 	"io/ioutil"
+	"os"
 )
 
 type Resources interface {
@@ -23,5 +24,3 @@ func (_ *localResources) ReadFile(localPath string) ([]byte, error) {
 func (_ *localResources) Open(localPath string) (*os.File, error) {
 	return os.Open(localPath)
 }
-
-

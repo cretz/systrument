@@ -1,10 +1,11 @@
 package util
+
 import (
-	"io"
 	"bytes"
-	"time"
 	"errors"
+	"io"
 	"regexp"
+	"time"
 )
 
 var (
@@ -12,9 +13,9 @@ var (
 )
 
 type readWaitResult struct {
-	byts []byte
-    found bool
-    err error
+	byts  []byte
+	found bool
+	err   error
 }
 
 func ReaderWaitFor(r io.Reader, re *regexp.Regexp, duration time.Duration) ([]byte, bool, error) {
@@ -38,7 +39,7 @@ func ReaderWaitFor(r io.Reader, re *regexp.Regexp, duration time.Duration) ([]by
 				found = re.Match(out.Bytes())
 			}
 		}
-		res <- &readWaitResult {out.Bytes(), found, err}
+		res <- &readWaitResult{out.Bytes(), found, err}
 	}()
 	select {
 	case result := <-res:

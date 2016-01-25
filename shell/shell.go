@@ -2,12 +2,12 @@ package shell
 
 import (
 	"bytes"
-	"time"
 	"errors"
-	"os/exec"
 	"github.com/cretz/systrument/context"
 	"github.com/cretz/systrument/util"
 	"io"
+	"os/exec"
+	"time"
 )
 
 var (
@@ -58,7 +58,8 @@ func WaitTimeout(cmd *exec.Cmd, dur time.Duration) error {
 	c := make(chan error, 1)
 	go func() { c <- cmd.Wait() }()
 	select {
-	case err := <- c: return err
+	case err := <-c:
+		return err
 	case <-time.After(dur):
 		cmd.Process.Kill()
 		return ErrTimeout

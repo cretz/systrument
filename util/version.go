@@ -1,8 +1,9 @@
 package util
+
 import (
+	"fmt"
 	"github.com/hashicorp/go-version"
 	"strings"
-	"fmt"
 )
 
 type Versionable interface {
@@ -29,10 +30,10 @@ func Constraint(str string) version.Constraints {
 // Gets version after last space and trims off anything anything non-numeric after the second decimal
 // (so it will get rid of metadata)
 func VersionAfterLastSpace(str string) (*version.Version, error) {
-	segments := strings.SplitN(str[strings.LastIndex(str, " ") + 1:], ".", 3)
-	for i, v := range segments[len(segments) - 1] {
+	segments := strings.SplitN(str[strings.LastIndex(str, " ")+1:], ".", 3)
+	for i, v := range segments[len(segments)-1] {
 		if v < '0' || v > '9' {
-			segments[len(segments) - 1] = segments[len(segments) - 1][0:i]
+			segments[len(segments)-1] = segments[len(segments)-1][0:i]
 			break
 		}
 	}

@@ -1,9 +1,10 @@
 package data
+
 import (
-	"text/template"
-	"fmt"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"text/template"
 )
 
 type UnmarshalFunc func([]byte, interface{}) error
@@ -87,5 +88,5 @@ func applyMap(existing map[string]interface{}, newValues map[string]interface{})
 
 var funcMap = template.FuncMap{
 	"hiddenPrompt": hiddenPrompt,
-	"jsonString": jsonString,
+	"jsonString":   jsonString,
 }

@@ -1,22 +1,22 @@
 package context
 
 import (
-	"github.com/cretz/systrument/data"
-	"io/ioutil"
-	"fmt"
-	"github.com/cretz/systrument/util"
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/cretz/systrument/data"
+	"github.com/cretz/systrument/resource"
+	"github.com/cretz/systrument/util"
+	"io/ioutil"
 	"log"
 	"os"
-	"github.com/cretz/systrument/resource"
 )
 
 type Context struct {
 	util.Logger
 	resource.Resources
-	Data *data.Data
-	IsRemote bool
+	Data         *data.Data
+	IsRemote     bool
 	BaseLocalDir string
 }
 
@@ -31,9 +31,9 @@ var unmarshalStripped = func(byts []byte, v interface{}) error {
 
 func FromConfigFiles(files []string, verbose bool, overrideLocalDir string) (*Context, error) {
 	ctx := &Context{
-		Logger: util.GoLoggerWrapper(log.New(os.Stdout, "", log.LstdFlags), verbose),
-		Resources: resource.LocalResources(),
-		Data: data.NewData(),
+		Logger:       util.GoLoggerWrapper(log.New(os.Stdout, "", log.LstdFlags), verbose),
+		Resources:    resource.LocalResources(),
+		Data:         data.NewData(),
 		BaseLocalDir: overrideLocalDir,
 	}
 	if overrideLocalDir == "" {

@@ -1,17 +1,17 @@
 package cmd
+
 import (
-	"github.com/spf13/cobra"
-	"github.com/cretz/systrument/context"
 	"encoding/json"
 	"fmt"
+	"github.com/cretz/systrument/context"
+	"github.com/spf13/cobra"
 )
 
-type ShowConfigCmd struct {}
-
+type ShowConfigCmd struct{}
 
 func (_ *ShowConfigCmd) CmdInfo() *cobra.Command {
 	return &cobra.Command{
-		Use: "showconfig",
+		Use:   "showconfig",
 		Short: "Show configuration after applying all templates",
 	}
 }

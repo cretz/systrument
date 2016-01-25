@@ -1,4 +1,5 @@
 package data
+
 import (
 	"encoding/json"
 	"fmt"

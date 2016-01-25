@@ -1,27 +1,27 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
+	"fmt"
 	"github.com/cretz/systrument/context"
 	"github.com/cretz/systrument/remote"
-	"fmt"
+	"github.com/spf13/cobra"
 	"os"
 )
 
 type RootCmd struct {
 	*cobra.Command
-	Verbose bool
-	ConfigFiles []string
-	IsRemote bool
-	ForceLocal bool
+	Verbose          bool
+	ConfigFiles      []string
+	IsRemote         bool
+	ForceLocal       bool
 	OverrideLocalDir string
-	Context *context.Context
+	Context          *context.Context
 }
 
 func NewRootCmd(cmds ...Command) *RootCmd {
 	c := &RootCmd{}
 	c.Command = &cobra.Command{
-		Use: "admin",
+		Use:   "admin",
 		Short: "Admin tool",
 		PersistentPreRun: func(childCmd *cobra.Command, args []string) {
 			if err := c.preRun(childCmd, args); err != nil {
