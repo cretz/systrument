@@ -1,6 +1,6 @@
 package data
 import (
-	"html/template"
+	"text/template"
 	"fmt"
 	"bytes"
 	"encoding/json"
@@ -38,7 +38,7 @@ func (d *Data) ApplyTemplateAndJSONMerge(byts []byte) error {
 
 func (d *Data) ApplyTemplateAndMerge(byts []byte, unmarshal UnmarshalFunc) error {
 	// First run template
-	tmpl, err := template.New("data").Parse(string(byts))
+	tmpl, err := template.New("data").Funcs(funcMap).Parse(string(byts))
 	if err != nil {
 		return fmt.Errorf("Invalid template: %v", err)
 	}
@@ -83,4 +83,9 @@ func applyMap(existing map[string]interface{}, newValues map[string]interface{})
 			}
 		}
 	}
+}
+
+var funcMap = template.FuncMap{
+	"hiddenPrompt": hiddenPrompt,
+	"jsonString": jsonString,
 }

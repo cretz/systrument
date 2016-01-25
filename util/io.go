@@ -5,23 +5,11 @@ import (
 	"time"
 	"errors"
 	"regexp"
-	"runtime"
-	"path/filepath"
 )
 
 var (
 	ErrTimeout = errors.New("Timed out")
-	BaseDirectory = ""
 )
-
-func init() {
-	_, thisFile, _, _ := runtime.Caller(1)
-	baseDir, err := filepath.Abs(filepath.Join(thisFile, "../.."))
-	if err != nil {
-		panic(err)
-	}
-	BaseDirectory = baseDir
-}
 
 type readWaitResult struct {
 	byts []byte

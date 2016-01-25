@@ -8,6 +8,7 @@ import (
 
 type ShowConfigCmd struct {}
 
+
 func (_ *ShowConfigCmd) CmdInfo() *cobra.Command {
 	return &cobra.Command{
 		Use: "showconfig",
