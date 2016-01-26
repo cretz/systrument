@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"regexp"
 	"time"
@@ -48,4 +49,25 @@ func ReaderWaitFor(r io.Reader, re *regexp.Regexp, duration time.Duration) ([]by
 		quit <- true
 		return nil, false, ErrTimeout
 	}
+}
+
+// Write to something when this writer matches some regex. This is a writer itself.
+type ExpectListener struct {
+	writeTo io.Writer
+	regex   *regexp.Regexp
+	toWrite string
+}
+
+func NewExpectListener(writeTo io.Writer, regex *regexp.Regexp, toWrite string) *ExpectListener {
+	return &ExpectListener{writeTo, regex, toWrite}
+}
+
+func (e *ExpectListener) Write(p []byte) (int, error) {
+	// TODO: use a scanner or something
+	if e.regex.Match(p) {
+		if _, err := e.writeTo.Write([]byte(e.toWrite)); err != nil {
+			return len(p), fmt.Errorf("Unable to write after seeing expected input: %v", err)
+		}
+	}
+	return len(p), nil
 }

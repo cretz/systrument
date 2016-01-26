@@ -60,8 +60,6 @@ func CreateTarballFromDir(source string, out string, level int) error {
 }
 
 func ExtractTarball(file *os.File, target string) error {
-	panic("TODO")
-	/*defer file.Close()
 	gr, err := gzip.NewReader(file)
 	if err != nil {
 		return fmt.Errorf("Unable to read gzip: %v", err)
@@ -70,12 +68,28 @@ func ExtractTarball(file *os.File, target string) error {
 	tr := tar.NewReader(gr)
 	for {
 		header, err := tr.Next()
-		if err != nil {
+		if err == io.EOF {
+			break
+		} else if err != nil {
 			return fmt.Errorf("Error reading tar: %v", err)
 		}
-		switch header.Typeflag {
-		case tar.TypeDir:
-			os.MkdirAll(filepath.Join())
+		path := filepath.Join(target, header.Name)
+		info := header.FileInfo()
+		if info.IsDir() {
+			if err := os.MkdirAll(path, info.Mode()); err != nil {
+				return err
+			}
+		} else {
+			childFile, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(childFile, tr)
+			childFile.Close()
+			if err != nil {
+				return err
+			}
 		}
-	}*/
+	}
+	return nil
 }

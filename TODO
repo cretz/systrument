@@ -1,0 +1,12 @@
+TODO:
+
+* Make sure to clean up temp directory
+* Support remote template execution
+* Maybe a better piped communication protocol
+* Support multiple servers in the config instead of just one
+* Better async support
+* Proper escaping of args sending to remote
+* Support custom functions in template stuff
+* Expose template stuff for use by others
+* Support an alternative to SFTP
+* Ship logs back from remote instead of just outputting them

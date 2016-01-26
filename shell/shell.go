@@ -7,6 +7,7 @@ import (
 	"github.com/cretz/systrument/util"
 	"io"
 	"os/exec"
+	"regexp"
 	"time"
 )
 
@@ -38,18 +39,8 @@ func CombinedOutput(ctx *context.Context, name string, args ...string) ([]byte, 
 func WrapCommandOutput(ctx *context.Context, cmd *exec.Cmd) *exec.Cmd {
 	// If we are verbose, we want to wrap stdout/stderr to log writes
 	if ctx.DebugEnabled() {
-		debugOutWriter := util.NewDebugLogWriter("SHELL OUT:", ctx)
-		if cmd.Stdout != nil {
-			cmd.Stdout = io.MultiWriter(cmd.Stdout, debugOutWriter)
-		} else {
-			cmd.Stdout = debugOutWriter
-		}
-		debugErrWriter := util.NewDebugLogWriter("SHELL ERR:", ctx)
-		if cmd.Stderr != nil {
-			cmd.Stderr = io.MultiWriter(cmd.Stderr, debugErrWriter)
-		} else {
-			cmd.Stderr = debugErrWriter
-		}
+		AppendStdoutWriter(cmd, util.NewDebugLogWriter("SHELL OUT:", ctx))
+		AppendStderrWriter(cmd, util.NewDebugLogWriter("SHELL ERR:", ctx))
 	}
 	return cmd
 }
@@ -64,4 +55,34 @@ func WaitTimeout(cmd *exec.Cmd, dur time.Duration) error {
 		cmd.Process.Kill()
 		return ErrTimeout
 	}
+}
+
+func AppendStdoutWriter(cmd *exec.Cmd, writer io.Writer) {
+	if cmd.Stdout == nil {
+		cmd.Stdout = writer
+	} else {
+		cmd.Stdout = io.MultiWriter(cmd.Stdout, writer)
+	}
+}
+
+func AppendStderrWriter(cmd *exec.Cmd, writer io.Writer) {
+	if cmd.Stderr == nil {
+		cmd.Stderr = writer
+	} else {
+		cmd.Stderr = io.MultiWriter(cmd.Stderr, writer)
+	}
+}
+
+var SudoPasswordPromptMatch = regexp.MustCompile("\\[sudo\\] password for .*:")
+
+func SudoCommand(password string, name string, args ...string) (*exec.Cmd, error) {
+	cmd := exec.Command("sudo", append([]string{"-S", name}, args...)...)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+	sudoHandler := util.NewExpectListener(stdin, SudoPasswordPromptMatch, password+"\n")
+	AppendStdoutWriter(cmd, sudoHandler)
+	AppendStderrWriter(cmd, sudoHandler)
+	return cmd, nil
 }

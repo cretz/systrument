@@ -24,10 +24,12 @@ func (g *goLoggerWrapper) DebugEnabled() bool {
 }
 
 func (g *goLoggerWrapper) Infof(format string, v ...interface{}) {
+	// TODO: send this back to remote please...
 	g.GoLogger.Printf(format, v...)
 }
 
 func (g *goLoggerWrapper) Debugf(format string, v ...interface{}) {
+	// TODO: send this back to remote please...
 	if g.debug {
 		g.GoLogger.Printf(format, v...)
 	}

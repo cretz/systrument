@@ -18,6 +18,8 @@ type Context struct {
 	Data         *data.Data
 	IsRemote     bool
 	BaseLocalDir string
+	TempDir      string
+	RemotePipe   *LocalToRemotePipe
 }
 
 var unmarshalStripped = func(byts []byte, v interface{}) error {
@@ -30,10 +32,15 @@ var unmarshalStripped = func(byts []byte, v interface{}) error {
 }
 
 func FromConfigFiles(files []string, verbose bool, overrideLocalDir string) (*Context, error) {
+	tempDir, err := ioutil.TempDir(os.TempDir(), "syst-temp")
+	if err != nil {
+		return nil, fmt.Errorf("Unable to create temporary dir: %v", err)
+	}
 	ctx := &Context{
 		Logger:       util.GoLoggerWrapper(log.New(os.Stdout, "", log.LstdFlags), verbose),
 		Resources:    resource.LocalResources(),
 		Data:         data.NewData(),
+		TempDir:      tempDir,
 		BaseLocalDir: overrideLocalDir,
 	}
 	if overrideLocalDir == "" {
@@ -56,6 +63,33 @@ func FromConfigFiles(files []string, verbose bool, overrideLocalDir string) (*Co
 	return ctx, nil
 }
 
-func FromRemoteStdPipe() (*Context, error) {
-	panic("TODO")
+func FromRemoteStdPipe(verbose bool, overrideLocalDir string) (*Context, error) {
+	tempDir, err := ioutil.TempDir(os.TempDir(), "syst-temp")
+	if err != nil {
+		return nil, fmt.Errorf("Unable to create temporary dir: %v", err)
+	}
+	// Since this is remote, we need it usable by everyone since SFTP from the other side writes here...
+	if err := os.Chmod(tempDir, os.ModePerm); err != nil {
+		return nil, fmt.Errorf("Unable to change temp dir privs: %v", err)
+	}
+	pipe := NewLocalToRemotePipe(os.Stdin, os.Stdout)
+	// We need to grab the data from the remote
+	// TODO: I would like to support << and >> for remote template parsing, but it would require
+	// 	us sending back the entire set of data each time because we need "prev" data
+	conf, err := pipe.Request("get-context-data")
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get context data: %v", err)
+	}
+	ctx := &Context{}
+	ctx.Logger = util.GoLoggerWrapper(log.New(os.Stdout, "", log.LstdFlags), verbose)
+	ctx.Resources = newRemoteResources(ctx)
+	ctx.Data = data.NewData()
+	if err = json.Unmarshal([]byte(conf), &ctx.Data.Values); err != nil {
+		return nil, fmt.Errorf("Unable to unmarshal context data from JSON: %v", err)
+	}
+	ctx.IsRemote = true
+	ctx.BaseLocalDir = overrideLocalDir
+	ctx.TempDir = tempDir
+	ctx.RemotePipe = pipe
+	return ctx, nil
 }

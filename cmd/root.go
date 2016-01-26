@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/cretz/systrument/context"
 	"github.com/cretz/systrument/remote"
@@ -33,7 +34,7 @@ func NewRootCmd(cmds ...Command) *RootCmd {
 	c.PersistentFlags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	c.PersistentFlags().StringSliceVarP(&c.ConfigFiles, "config", "c", nil, "Config file(s)")
 	c.PersistentFlags().BoolVar(&c.IsRemote, "is-remote", false, "If remote we ignore several things")
-	c.PersistentFlags().BoolVar(&c.IsRemote, "force-local", false, "Never run remote regardless of config")
+	c.PersistentFlags().BoolVar(&c.ForceLocal, "force-local", false, "Never run remote regardless of config")
 	c.PersistentFlags().StringVar(&c.OverrideLocalDir, "override-local-dir", "", "The path to the main go file")
 
 	c.AddCommand(new(ShowConfigCmd))
@@ -66,8 +67,10 @@ func (r *RootCmd) preRun(childCmd *cobra.Command, args []string) error {
 		}
 		r.Context = ctx
 	} else {
-		// TODO: encrypt
-		ctx, err := context.FromRemoteStdPipe()
+		if r.OverrideLocalDir == "" {
+			return errors.New("Must have --override-local-dir for remote")
+		}
+		ctx, err := context.FromRemoteStdPipe(r.Verbose, r.OverrideLocalDir)
 		if err != nil {
 			return fmt.Errorf("Unable to begin remote command over std pipes: %v", err)
 		}

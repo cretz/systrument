@@ -33,23 +33,30 @@ func (d *Data) UnmarshalJSON(v interface{}) error {
 	return UnmarshalJSONMap(d.Values, v)
 }
 
+func (d *Data) ApplyTemplate(byts []byte, leftDelim string, rightDelim string) ([]byte, error) {
+	tmpl, err := template.New("data").Delims(leftDelim, rightDelim).Funcs(funcMap).Parse(string(byts))
+	if err != nil {
+		return nil, fmt.Errorf("Invalid template: %v", err)
+	}
+	tmplValues := map[string]interface{}{"prev": d.Values}
+	buf := &bytes.Buffer{}
+	if err := tmpl.Execute(buf, tmplValues); err != nil {
+		return nil, fmt.Errorf("Unable to execute template: %v", err)
+	}
+	return buf.Bytes(), nil
+}
+
 func (d *Data) ApplyTemplateAndJSONMerge(byts []byte) error {
 	return d.ApplyTemplateAndMerge(byts, json.Unmarshal)
 }
 
 func (d *Data) ApplyTemplateAndMerge(byts []byte, unmarshal UnmarshalFunc) error {
-	// First run template
-	tmpl, err := template.New("data").Funcs(funcMap).Parse(string(byts))
+	byts, err := d.ApplyTemplate(byts, "{{", "}}")
 	if err != nil {
-		return fmt.Errorf("Invalid template: %v", err)
-	}
-	tmplValues := map[string]interface{}{"prev": d.Values}
-	buf := &bytes.Buffer{}
-	if err := tmpl.Execute(buf, tmplValues); err != nil {
-		return fmt.Errorf("Unable to execute template: %v", err)
+		return err
 	}
 	newValues := map[string]interface{}{}
-	if err := unmarshal(buf.Bytes(), &newValues); err != nil {
+	if err := unmarshal(byts, &newValues); err != nil {
 		return fmt.Errorf("Unable to unmarshal resulting text: %v", err)
 	}
 	// Merge it
