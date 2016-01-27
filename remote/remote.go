@@ -29,6 +29,7 @@ type RemoteServer struct {
 
 type SSH struct {
 	User string `json:"user"`
+	Port int    `json:"port"`
 	Pass string `json:"pass"`
 	Sudo bool   `json:"sudo"`
 }

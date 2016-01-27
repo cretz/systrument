@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -27,7 +28,11 @@ func newSshConn(ctx *context.Context, server *RemoteServer) (*sshConn, error) {
 		},
 	}
 	// TODO: configurable port
-	client, err := ssh.Dial("tcp", server.Host+":22", config)
+	port := server.SSH.Port
+	if port == 0 {
+		port = 22
+	}
+	client, err := ssh.Dial("tcp", server.Host+":"+strconv.Itoa(port), config)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to connect to %v over SSH: %v", server.Host, err)
 	}
