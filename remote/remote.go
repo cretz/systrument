@@ -31,6 +31,7 @@ type SSH struct {
 	User string `json:"user"`
 	Port int    `json:"port"`
 	Pass string `json:"pass"`
+	PrivateKey string `json:privateKey"`
 	Sudo bool   `json:"sudo"`
 }
 
@@ -58,8 +59,8 @@ func (r *RemoteServer) validate() (errs []error) {
 		if r.SSH.User == "" {
 			errs = append(errs, errors.New("Remote server 'ssh.user' required"))
 		}
-		if r.SSH.Pass == "" {
-			errs = append(errs, errors.New("Remote server 'ssh.pass' required"))
+		if (r.SSH.Pass == "") == (r.SSH.PrivateKey == "") {
+			errs = append(errs, errors.New("Remote server 'ssh.pass' or 'ssh.privateKey' required but not both"))
 		}
 	}
 	return

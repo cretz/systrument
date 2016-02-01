@@ -8,6 +8,7 @@ import (
 type Resources interface {
 	ReadFile(localPath string) ([]byte, error)
 	Open(localPath string) (*os.File, error)
+	// TODO: join :-(
 }
 
 type localResources struct {

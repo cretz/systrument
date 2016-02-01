@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"io/ioutil"
 )
 
 type sshConn struct {
@@ -26,6 +27,20 @@ func newSshConn(ctx *context.Context, server *RemoteServer) (*sshConn, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.Password(server.SSH.Pass),
 		},
+	}
+	if server.SSH.Pass != "" {
+		config.Auth = append(config.Auth, ssh.Password(server.SSH.Pass))
+	}
+	if server.SSH.PrivateKey != "" {
+		byts, err := ioutil.ReadFile(server.SSH.PrivateKey)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to read private key: %v", err)
+		}
+		key, err := ssh.ParsePrivateKey(byts)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to parse private key: %v", err)
+		}
+		config.Auth = append(config.Auth, ssh.PublicKeys(key))
 	}
 	// TODO: configurable port
 	port := server.SSH.Port
