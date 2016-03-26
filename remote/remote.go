@@ -28,11 +28,11 @@ type RemoteServer struct {
 }
 
 type SSH struct {
-	User string `json:"user"`
-	Port int    `json:"port"`
-	Pass string `json:"pass"`
+	User       string `json:"user"`
+	Port       int    `json:"port"`
+	Pass       string `json:"pass"`
 	PrivateKey string `json:privateKey"`
-	Sudo bool   `json:"sudo"`
+	Sudo       bool   `json:"sudo"`
 }
 
 func RemoteIfPresent(ctx *context.Context) (*Remote, error) {

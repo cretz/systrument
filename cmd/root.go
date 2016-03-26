@@ -30,6 +30,20 @@ func NewRootCmd(cmds ...Command) *RootCmd {
 				os.Exit(-1)
 			}
 		},
+		PersistentPostRun: func(childCmd *cobra.Command, args []string) {
+			// If we're remote we need to delete ourself
+			if c.IsRemote {
+				c.Context.Debugf("Removing self at %v", os.Args[0])
+				if err := os.Remove(os.Args[0]); err != nil {
+					c.Context.Infof("Failed to remove %v: %v", os.Args[0], err)
+				}
+			}
+			// We need to remove the entire temp directory every time
+			c.Context.Debugf("Removing temp directory at %v", c.Context.TempDir)
+			if err := os.RemoveAll(c.Context.TempDir); err != nil {
+				c.Context.Debugf("Unable to remove temp dir %v: %v", c.Context.TempDir, err)
+			}
+		},
 	}
 	c.PersistentFlags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	c.PersistentFlags().StringSliceVarP(&c.ConfigFiles, "config", "c", nil, "Config file(s)")

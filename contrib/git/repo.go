@@ -2,8 +2,8 @@ package git
 
 import (
 	"errors"
-	"net/url"
 	"fmt"
+	"net/url"
 )
 
 type Repo struct {

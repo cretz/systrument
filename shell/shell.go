@@ -73,6 +73,10 @@ func AppendStderrWriter(cmd *exec.Cmd, writer io.Writer) {
 	}
 }
 
+func Command(ctx *context.Context, name string, args ...string) *exec.Cmd {
+	return WrapCommandOutput(ctx, exec.Command(name, args...))
+}
+
 var SudoPasswordPromptMatch = regexp.MustCompile("\\[sudo\\] password for .*:")
 
 func SudoCommand(password string, name string, args ...string) (*exec.Cmd, error) {

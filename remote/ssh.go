@@ -9,10 +9,10 @@ import (
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
-	"io/ioutil"
 )
 
 type sshConn struct {
