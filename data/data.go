@@ -17,6 +17,11 @@ func NewData() *Data {
 	return &Data{map[string]interface{}{}}
 }
 
+func DataFromObj(v interface{}) error {
+	data := NewData()
+	return data.UnmarshalJSON(v)
+}
+
 func UnmarshalJSONMap(m map[string]interface{}, v interface{}) error {
 	// First marshal to JSON, then unmarshal into v
 	byts, err := json.Marshal(m)
@@ -33,7 +38,11 @@ func (d *Data) UnmarshalJSON(v interface{}) error {
 	return UnmarshalJSONMap(d.Values, v)
 }
 
-func (d *Data) ApplyTemplate(byts []byte, leftDelim string, rightDelim string) ([]byte, error) {
+func (d *Data) ApplyTemplate(byts []byte) ([]byte, error) {
+	return d.ApplyTemplateWithDelims(byts, "{{", "}}")
+}
+
+func (d *Data) ApplyTemplateWithDelims(byts []byte, leftDelim string, rightDelim string) ([]byte, error) {
 	tmpl, err := template.New("data").Delims(leftDelim, rightDelim).Funcs(funcMap).Parse(string(byts))
 	if err != nil {
 		return nil, fmt.Errorf("Invalid template: %v", err)
@@ -51,7 +60,7 @@ func (d *Data) ApplyTemplateAndJSONMerge(byts []byte) error {
 }
 
 func (d *Data) ApplyTemplateAndMerge(byts []byte, unmarshal UnmarshalFunc) error {
-	byts, err := d.ApplyTemplate(byts, "{{", "}}")
+	byts, err := d.ApplyTemplate(byts)
 	if err != nil {
 		return err
 	}
@@ -96,4 +105,22 @@ func applyMap(existing map[string]interface{}, newValues map[string]interface{})
 var funcMap = template.FuncMap{
 	"hiddenPrompt": hiddenPrompt,
 	"jsonString":   jsonString,
+}
+
+func ApplyTemplate(name string, byts []byte, v interface{}, funcs ...template.FuncMap) ([]byte, error) {
+	newFuncMap := template.FuncMap{}
+	for _, fmap := range append([]template.FuncMap{funcMap}, funcs...) {
+		for key, val := range fmap {
+			newFuncMap[key] = val
+		}
+	}
+	tmpl, err := template.New(name).Funcs(newFuncMap).Parse(string(byts))
+	if err != nil {
+		return nil, err
+	}
+	buf := &bytes.Buffer{}
+	if err := tmpl.Execute(buf, v); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

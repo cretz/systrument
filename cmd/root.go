@@ -95,17 +95,37 @@ func (r *RootCmd) preRun(childCmd *cobra.Command, args []string) error {
 
 type Command interface {
 	CmdInfo() *cobra.Command
+}
+
+type ParentCommand interface {
+	Command
+	Children() []Command
+}
+
+type RunnableCommand interface {
+	Command
 	Run(*context.Context) error
 }
 
-// This overrides Run
+// This overrides Run if it's a RunnableCommand
 func (r *RootCmd) AddCommand(cmd Command) {
-	info := cmd.CmdInfo()
-	info.Run = func(childCmd *cobra.Command, args []string) {
-		if err := cmd.Run(r.Context); err != nil {
-			r.Context.Infof("Error: %v", err)
-			os.Exit(-1)
+	r.addCommand(r.Command, cmd)
+}
+
+func (r *RootCmd) addCommand(parent *cobra.Command, cmds ...Command) {
+	for _, cmd := range cmds {
+		info := cmd.CmdInfo()
+		switch cmd := cmd.(type) {
+		case ParentCommand:
+			r.addCommand(info, cmd.Children()...)
+		case RunnableCommand:
+			info.Run = func(childCmd *cobra.Command, args []string) {
+				if err := cmd.Run(r.Context); err != nil {
+					r.Context.Infof("Error: %v", err)
+					os.Exit(-1)
+				}
+			}
 		}
+		parent.AddCommand(info)
 	}
-	r.Command.AddCommand(info)
 }
