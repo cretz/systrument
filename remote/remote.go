@@ -118,6 +118,7 @@ func (r *Remote) buildForRemote() (string, error) {
 	if err = f.Close(); err != nil {
 		return "", fmt.Errorf("Unable to perform early close of temp file: %v", err)
 	}
+	// TODO: reduce size with -ldflags="-s -w"?
 	cmd := shell.WrapCommandOutput(r.ctx, exec.Command("go", "build", "-o", f.Name()))
 	cmd.Dir = r.ctx.BaseLocalDir
 	// Set the environ the same as ours except strip GOOS and GOARCH

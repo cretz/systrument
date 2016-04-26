@@ -105,6 +105,7 @@ func applyMap(existing map[string]interface{}, newValues map[string]interface{})
 var funcMap = template.FuncMap{
 	"hiddenPrompt": hiddenPrompt,
 	"jsonString":   jsonString,
+	"jsonVal":      jsonVal,
 }
 
 func ApplyTemplate(name string, byts []byte, v interface{}, funcs ...template.FuncMap) ([]byte, error) {
