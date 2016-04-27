@@ -22,6 +22,11 @@ func DataFromObj(v interface{}) error {
 	return data.UnmarshalJSON(v)
 }
 
+func DataFromJSONBytes(byts []byte) (*Data, error) {
+	data := NewData()
+	return data, json.Unmarshal(byts, &data.Values)
+}
+
 func UnmarshalJSONMap(m map[string]interface{}, v interface{}) error {
 	// First marshal to JSON, then unmarshal into v
 	byts, err := json.Marshal(m)
