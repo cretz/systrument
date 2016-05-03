@@ -3,6 +3,7 @@ package shell
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/cretz/systrument/context"
 	"github.com/cretz/systrument/util"
 	"io"
@@ -17,6 +18,11 @@ var (
 
 func Run(ctx *context.Context, name string, args ...string) error {
 	return WrapCommandOutput(ctx, exec.Command(name, args...)).Run()
+}
+
+func RunWithTimeout(ctx *context.Context, dur time.Duration, name string, args ...string) error {
+	return StartAndWaitTimeout(WrapCommandOutput(ctx, exec.Command(name, args...)), dur)
+
 }
 
 func Output(ctx *context.Context, name string, args ...string) ([]byte, error) {
@@ -43,6 +49,13 @@ func WrapCommandOutput(ctx *context.Context, cmd *exec.Cmd) *exec.Cmd {
 		AppendStderrWriter(cmd, util.NewDebugLogWriter("SHELL ERR:", ctx))
 	}
 	return cmd
+}
+
+func StartAndWaitTimeout(cmd *exec.Cmd, dur time.Duration) error {
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("Failed to start: %v", err)
+	}
+	return WaitTimeout(cmd, dur)
 }
 
 func WaitTimeout(cmd *exec.Cmd, dur time.Duration) error {

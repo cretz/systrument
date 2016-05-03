@@ -31,7 +31,7 @@ type SSH struct {
 	User       string `json:"user"`
 	Port       int    `json:"port"`
 	Pass       string `json:"pass"`
-	PrivateKey string `json:privateKey"`
+	PrivateKey string `json:"privateKey"`
 	Sudo       bool   `json:"sudo"`
 }
 

@@ -17,6 +17,7 @@ type RootCmd struct {
 	ForceLocal       bool
 	OverrideLocalDir string
 	Context          *context.Context
+	cleanedUp        bool
 }
 
 func NewRootCmd(cmds ...Command) *RootCmd {
@@ -27,22 +28,12 @@ func NewRootCmd(cmds ...Command) *RootCmd {
 		PersistentPreRun: func(childCmd *cobra.Command, args []string) {
 			if err := c.preRun(childCmd, args); err != nil {
 				fmt.Printf("Error: %v\n", err)
+				c.cleanUp()
 				os.Exit(-1)
 			}
 		},
 		PersistentPostRun: func(childCmd *cobra.Command, args []string) {
-			// If we're remote we need to delete ourself
-			if c.IsRemote {
-				c.Context.Debugf("Removing self at %v", os.Args[0])
-				if err := os.Remove(os.Args[0]); err != nil {
-					c.Context.Infof("Failed to remove %v: %v", os.Args[0], err)
-				}
-			}
-			// We need to remove the entire temp directory every time
-			c.Context.Debugf("Removing temp directory at %v", c.Context.TempDir)
-			if err := os.RemoveAll(c.Context.TempDir); err != nil {
-				c.Context.Debugf("Unable to remove temp dir %v: %v", c.Context.TempDir, err)
-			}
+			c.cleanUp()
 		},
 	}
 	c.PersistentFlags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
@@ -93,6 +84,24 @@ func (r *RootCmd) preRun(childCmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func (r *RootCmd) cleanUp() {
+	if !r.cleanedUp {
+		// If we're remote we need to delete ourself
+		if r.IsRemote {
+			r.Context.Debugf("Removing self at %v", os.Args[0])
+			if err := os.Remove(os.Args[0]); err != nil {
+				r.Context.Infof("Failed to remove %v: %v", os.Args[0], err)
+			}
+		}
+		// We need to remove the entire temp directory every time
+		r.Context.Debugf("Removing temp directory at %v", r.Context.TempDir)
+		if err := os.RemoveAll(r.Context.TempDir); err != nil {
+			r.Context.Debugf("Unable to remove temp dir %v: %v", r.Context.TempDir, err)
+		}
+		r.cleanedUp = true
+	}
+}
+
 type Command interface {
 	CmdInfo() *cobra.Command
 }
@@ -122,6 +131,7 @@ func (r *RootCmd) addCommand(parent *cobra.Command, cmds ...Command) {
 			info.Run = func(childCmd *cobra.Command, args []string) {
 				if err := cmd.Run(r.Context); err != nil {
 					r.Context.Infof("Error: %v", err)
+					r.cleanUp()
 					os.Exit(-1)
 				}
 			}
