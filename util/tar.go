@@ -59,6 +59,15 @@ func CreateTarballFromDir(source string, out string, level int) error {
 	return afterFileErr
 }
 
+func ExtractTarballFile(filename string, target string) error {
+	f, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return ExtractTarball(f, target)
+}
+
 func ExtractTarball(file *os.File, target string) error {
 	gr, err := gzip.NewReader(file)
 	if err != nil {
