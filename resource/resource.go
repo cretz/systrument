@@ -10,6 +10,7 @@ import (
 type Resources interface {
 	ReadFile(localPath string) ([]byte, error)
 	Open(localPath string) (*os.File, error)
+	ReadableFileName(localPath string) (string, error)
 	// TODO: join :-(
 }
 
@@ -43,4 +44,8 @@ func (_ *localResources) ReadFile(localPath string) ([]byte, error) {
 
 func (_ *localResources) Open(localPath string) (*os.File, error) {
 	return os.Open(localPath)
+}
+
+func (_ *localResources) ReadableFileName(localPath string) (string, error) {
+	return localPath, nil
 }

@@ -28,12 +28,20 @@ func (r *remoteResources) ReadFile(localPath string) ([]byte, error) {
 }
 
 func (r *remoteResources) Open(localPath string) (*os.File, error) {
+	tempFile, err := r.ReadableFileName(localPath)
+	if err != nil {
+		return nil, err
+	}
+	return os.Open(tempFile)
+}
+
+func (r *remoteResources) ReadableFileName(localPath string) (string, error) {
 	// TODO: atomic
 	r.counter++
 	tempFile := filepath.Join(r.ctx.TempDir, "temp-file-"+strconv.Itoa(r.counter))
 	_, err := r.ctx.RemotePipe.Request("send-file " + localPath + " --to-- " + tempFile)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to obtain file from remote: %v", err)
+		return "", fmt.Errorf("Failed to obtain file from remote: %v", err)
 	}
-	return os.Open(tempFile)
+	return tempFile, nil
 }
