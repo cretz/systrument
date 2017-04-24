@@ -93,10 +93,12 @@ func (r *RootCmd) cleanUp() {
 				r.Context.Infof("Failed to remove %v: %v", os.Args[0], err)
 			}
 		}
-		// We need to remove the entire temp directory every time
-		r.Context.Debugf("Removing temp directory at %v", r.Context.TempDir)
-		if err := os.RemoveAll(r.Context.TempDir); err != nil {
-			r.Context.Debugf("Unable to remove temp dir %v: %v", r.Context.TempDir, err)
+		// We need to remove the entire temp directory every time if context was created
+		if r.Context != nil {
+			r.Context.Debugf("Removing temp directory at %v", r.Context.TempDir)
+			if err := os.RemoveAll(r.Context.TempDir); err != nil {
+				r.Context.Debugf("Unable to remove temp dir %v: %v", r.Context.TempDir, err)
+			}
 		}
 		r.cleanedUp = true
 	}
