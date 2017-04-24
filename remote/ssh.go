@@ -28,6 +28,9 @@ func newSshConn(ctx *context.Context, server *RemoteServer) (*sshConn, error) {
 			ssh.Password(server.SSH.Pass),
 		},
 	}
+	if server.SSH.IgnoreHostKey {
+		config.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	}
 	if server.SSH.Pass != "" {
 		config.Auth = append(config.Auth, ssh.Password(server.SSH.Pass))
 	}
